@@ -1,0 +1,60 @@
+[submodule "Sequence"]
+	path = Sequence
+	url = https://github.com/IanLunn/Sequence
+[submodule "image-ppt-maker"]
+	path = image-ppt-maker
+	url = https://github.com/callmexhj/image-ppt-maker
+[submodule "inspire.js"]
+	path = inspire.js
+	url = https://github.com/LeaVerou/inspire.js
+[submodule "marpit"]
+	path = marpit
+	url = https://github.com/marp-team/marpit
+[submodule "reveal.js"]
+	path = reveal.js
+	url = https://github.com/hakimel/reveal.js
+[submodule "univer"]
+	path = univer
+	url = https://github.com/dream-num/univer
+[submodule "zentable"]
+	path = zentable
+	url = https://github.com/vipingit1/zentable
+[submodule "vipingit1-repos/Agent-Stream"]
+	path = vipingit1-repos/Agent-Stream
+	url = https://github.com/vipingit1/Agent-Stream.git
+[submodule "vipingit1-repos/Attorney-Lite"]
+	path = vipingit1-repos/Attorney-Lite
+	url = https://github.com/vipingit1/Attorney-Lite.git
+[submodule "vipingit1-repos/Exotel-WhatsApp"]
+	path = vipingit1-repos/Exotel-WhatsApp
+	url = https://github.com/vipingit1/Exotel-WhatsApp.git
+[submodule "vipingit1-repos/ExotelAPI"]
+	path = vipingit1-repos/ExotelAPI
+	url = https://github.com/vipingit1/ExotelAPI.git
+[submodule "vipingit1-repos/exotel_integration"]
+	path = vipingit1-repos/exotel_integration
+	url = https://github.com/vipingit1/exotel_integration.git
+[submodule "vipingit1-repos/ffmpeg"]
+	path = vipingit1-repos/ffmpeg
+	url = https://github.com/vipingit1/ffmpeg.git
+[submodule "vipingit1-repos/generate"]
+	path = vipingit1-repos/generate
+	url = https://github.com/vipingit1/generate.git
+[submodule "vipingit1-repos/perlWebProject1"]
+	path = vipingit1-repos/perlWebProject1
+	url = https://github.com/vipingit1/perlWebProject1.git
+[submodule "vipingit1-repos/smart-photo-categorizer"]
+	path = vipingit1-repos/smart-photo-categorizer
+	url = https://github.com/vipingit1/smart-photo-categorizer.git
+[submodule "vipingit1-repos/vgagbusinesssolutions-live"]
+	path = vipingit1-repos/vgagbusinesssolutions-live
+	url = https://github.com/vipingit1/vgagbusinesssolutions-live.git
+[submodule "vipingit1-repos/voice-streaming"]
+	path = vipingit1-repos/voice-streaming
+	url = https://github.com/vipingit1/voice-streaming.git
+[submodule "vipingit1-repos/whatsapp-reader"]
+	path = vipingit1-repos/whatsapp-reader
+	url = https://github.com/vipingit1/whatsapp-reader.git
+[submodule "vipingit1-repos/wp-local-physio"]
+	path = vipingit1-repos/wp-local-physio
+	url = https://github.com/vipingit1/wp-local-physio.git

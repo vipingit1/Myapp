@@ -140,12 +140,12 @@ def generate_html(images, output_path, tracks=None):
       cursor: pointer;
       border-radius: 6px;
       z-index: 20;
-      transition: background 0.2s;
       user-select: none;
       opacity: 0;
+      pointer-events: none;
       transition: opacity 0.2s, background 0.2s;
     }}
-    body:hover .arrow {{ opacity: 1; }}
+    body:hover .arrow {{ opacity: 1; pointer-events: auto; }}
     .arrow:hover {{ background: rgba(0,0,0,0.65); }}
     #btn-prev {{ left: 12px; }}
     #btn-next {{ right: 12px; }}
@@ -153,7 +153,7 @@ def generate_html(images, output_path, tracks=None):
     #info-bar {{
       position: fixed;
       bottom: 0; left: 0; right: 0;
-      z-index: 20;
+      z-index: 40;
       display: flex;
       align-items: center;
       gap: 14px;
@@ -162,9 +162,10 @@ def generate_html(images, output_path, tracks=None):
       font-size: 0.85rem;
       color: #ccc;
       opacity: 0;
+      pointer-events: none;
       transition: opacity 0.3s;
     }}
-    body:hover #info-bar {{ opacity: 1; }}
+    body:hover #info-bar {{ opacity: 1; pointer-events: auto; }}
     #counter {{ font-weight: bold; color: #fff; white-space: nowrap; }}
     #caption {{ flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
     #btn-play {{
@@ -247,12 +248,13 @@ def generate_html(images, output_path, tracks=None):
     #scrubber-wrap {{
       position: fixed;
       bottom: 52px; left: 0; right: 0;
-      z-index: 25;
+      z-index: 35;
       padding: 0 20px;
       opacity: 0;
+      pointer-events: none;
       transition: opacity 0.3s;
     }}
-    body:hover #scrubber-wrap {{ opacity: 1; }}
+    body:hover #scrubber-wrap {{ opacity: 1; pointer-events: auto; }}
     #scrubber {{
       width: 100%;
       accent-color: #fff;
@@ -298,11 +300,32 @@ def generate_html(images, output_path, tracks=None):
       overflow-x: auto;
       overflow-y: hidden;
       white-space: nowrap;
-      padding: 8px 12px;
+      padding: 8px 12px 8px 50px;
       gap: 8px;
       scroll-behavior: smooth;
     }}
     #filmstrip.open {{ display: flex; align-items: center; }}
+    /* Close button pinned inside the filmstrip */
+    #filmstrip-close {{
+      position: fixed;
+      bottom: 38px;
+      left: 10px;
+      z-index: 31;
+      display: none;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid rgba(255,255,255,0.35);
+      color: #fff;
+      font-size: 1.1rem;
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }}
+    #filmstrip.open ~ #filmstrip-close,
+    #filmstrip-close.visible {{ display: flex; }}
+    #filmstrip-close:hover {{ background: rgba(255,80,80,0.45); }}
     .thumb {{
       flex-shrink: 0;
       width: 80px;
@@ -387,6 +410,7 @@ def generate_html(images, output_path, tracks=None):
 
   <!-- Thumbnail filmstrip -->
   <div id="filmstrip"></div>
+  <button id="filmstrip-close" onclick="toggleFilmstrip()" title="Close thumbnails (T or Esc)">✕</button>
 
   <script>
     const images = [
@@ -406,6 +430,7 @@ def generate_html(images, output_path, tracks=None):
     const scrubber = document.getElementById("scrubber");
     const filmstrip = document.getElementById("filmstrip");
     const gotoInput = document.getElementById("goto-input");
+    const filmstripClose = document.getElementById("filmstrip-close");
 
     scrubber.max = images.length - 1;
 
@@ -441,8 +466,10 @@ def generate_html(images, output_path, tracks=None):
 
     function toggleFilmstrip() {{
       filmstrip.classList.toggle("open");
+      const isOpen = filmstrip.classList.contains("open");
       document.getElementById("btn-filmstrip").textContent =
-        filmstrip.classList.contains("open") ? "✕ Close" : "🎞 Thumbnails";
+        isOpen ? "🎞 Thumbnails" : "🎞 Thumbnails";
+      filmstripClose.classList.toggle("visible", isOpen);
       if (!filmstripBuilt) buildFilmstrip();
       scrollToActiveThumb();
     }}

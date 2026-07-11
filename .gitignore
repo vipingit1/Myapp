@@ -1,3 +1,23 @@
 # Downloaded media / output folders
 padmaimpex_photos/
 output/
+
+# Large media files (video/audio/thumbnails)
+*.webm
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.webp
+salsa-classics/
+
+# Downloaded ML model files
+cv_models/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Test / temp files
+test_scraper.py

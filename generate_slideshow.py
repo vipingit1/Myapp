@@ -58,73 +58,80 @@ def generate_html(images, output_path):
   <style>
     * {{ margin: 0; padding: 0; box-sizing: border-box; }}
     body {{
-      background: #111;
+      background: #000;
       color: #eee;
       font-family: sans-serif;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      padding-top: 42px;
-    }}
-    #slide-container {{
-      position: relative;
       width: 100vw;
-      height: 90vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      height: 100vh;
+      overflow: hidden;
+    }}
+    /* Full-frame image fills entire viewport */
+    #slide-container {{
+      position: fixed;
+      inset: 0;
+      z-index: 0;
     }}
     #slide-img {{
-      max-width: 100%;
-      max-height: 100%;
-      object-fit: contain;
-      border-radius: 4px;
-      transition: opacity 0.5s ease;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      transition: opacity 0.6s ease;
     }}
     #slide-img.fade {{ opacity: 0; }}
+    /* Arrows */
     .arrow {{
-      position: absolute;
+      position: fixed;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.35);
       border: none;
       color: white;
       font-size: 2.5rem;
-      padding: 12px 18px;
+      padding: 14px 18px;
       cursor: pointer;
       border-radius: 6px;
-      z-index: 10;
+      z-index: 20;
       transition: background 0.2s;
       user-select: none;
+      opacity: 0;
+      transition: opacity 0.2s, background 0.2s;
     }}
-    .arrow:hover {{ background: rgba(255,255,255,0.35); }}
+    body:hover .arrow {{ opacity: 1; }}
+    .arrow:hover {{ background: rgba(0,0,0,0.65); }}
     #btn-prev {{ left: 12px; }}
     #btn-next {{ right: 12px; }}
+    /* Info bar — overlaid at bottom, auto-hides */
     #info-bar {{
-      height: 10vh;
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 20;
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 14px;
+      padding: 10px 20px;
+      background: linear-gradient(transparent, rgba(0,0,0,0.75));
       font-size: 0.85rem;
-      color: #aaa;
+      color: #ccc;
+      opacity: 0;
+      transition: opacity 0.3s;
     }}
-    #counter {{ font-weight: bold; color: #fff; }}
-    #caption {{ max-width: 60vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
+    body:hover #info-bar {{ opacity: 1; }}
+    #counter {{ font-weight: bold; color: #fff; white-space: nowrap; }}
+    #caption {{ flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }}
     #btn-play {{
-      background: rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.2);
       border: none;
       color: white;
       padding: 6px 14px;
       border-radius: 20px;
       cursor: pointer;
       font-size: 0.85rem;
+      white-space: nowrap;
       transition: background 0.2s;
     }}
-    #btn-play:hover {{ background: rgba(255,255,255,0.3); }}
-    #speed-label {{ color: #888; font-size: 0.8rem; }}
+    #btn-play:hover {{ background: rgba(255,255,255,0.4); }}
+    #speed-label {{ color: #aaa; font-size: 0.8rem; white-space: nowrap; }}
     input[type=range] {{ accent-color: #fff; cursor: pointer; }}
     #music-bar {{
       position: fixed;
@@ -193,7 +200,7 @@ def generate_html(images, output_path):
   <!-- Drag-and-drop overlay -->
   <div id="drop-overlay">🎵 Drop audio files here</div>
 
-  <!-- Music bar -->
+  <!-- Music bar (top) -->
   <div id="music-bar">
     <a id="yt-btn" class="music-btn"
        href="https://studio.youtube.com/channel/UCmusiclib/music"
@@ -217,11 +224,16 @@ def generate_html(images, output_path):
   </div>
   <audio id="bg-music"></audio>
 
+  <!-- Full-frame slide -->
   <div id="slide-container">
-    <button class="arrow" id="btn-prev" onclick="move(-1)">&#8592;</button>
     <img id="slide-img" src="" alt="slide" />
-    <button class="arrow" id="btn-next" onclick="move(1)">&#8594;</button>
   </div>
+
+  <!-- Nav arrows -->
+  <button class="arrow" id="btn-prev" onclick="move(-1)">&#8592;</button>
+  <button class="arrow" id="btn-next" onclick="move(1)">&#8594;</button>
+
+  <!-- Info / controls bar (bottom overlay) -->
   <div id="info-bar">
     <span id="counter"></span>
     <span id="caption"></span>
@@ -229,6 +241,7 @@ def generate_html(images, output_path):
     <span id="speed-label">Speed:</span>
     <input type="range" id="speed" min="1" max="10" value="4" title="Slide interval (seconds)" />
     <span id="speed-val">4s</span>
+    <button id="btn-fs" onclick="toggleFullscreen()" title="Fullscreen (F)" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 10px;border-radius:20px;cursor:pointer;font-size:0.85rem;">⛶ Fullscreen</button>
   </div>
 
   <script>
@@ -285,7 +298,18 @@ def generate_html(images, output_path):
       if (e.key === "ArrowLeft" || e.key === "ArrowUp") move(-1);
       if (e.key === " ") {{ e.preventDefault(); togglePlay(); }}
       if (e.key === "m" || e.key === "M") toggleMute();
+      if (e.key === "f" || e.key === "F") toggleFullscreen();
     }});
+
+    function toggleFullscreen() {{
+      if (!document.fullscreenElement) {{
+        document.documentElement.requestFullscreen();
+        document.getElementById("btn-fs").textContent = "✕ Exit";
+      }} else {{
+        document.exitFullscreen();
+        document.getElementById("btn-fs").textContent = "⛶ Fullscreen";
+      }}
+    }}
 
     showSlide(0);
 

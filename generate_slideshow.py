@@ -499,10 +499,14 @@ def generate_html(images, output_path):
     let trackIndex = 0;
 
     function addTracks(files) {{
-      const audioFiles = Array.from(files).filter(f => f.type.startsWith("audio/"));
+      const audioFiles = Array.from(files).filter(f =>
+        f.type.startsWith("audio/") || /\\.(mp3|wav|ogg|flac|aac|m4a|opus|weba)$/i.test(f.name)
+      );
+      if (!audioFiles.length) return;
+      const wasEmpty = playlist.length === 0;
       audioFiles.forEach(f => playlist.push({{ url: URL.createObjectURL(f), name: f.name.replace(/\\.[^.]+$/, "") }}));
       updatePlaylistCount();
-      if (playlist.length === audioFiles.length) playTrack(0);
+      if (wasEmpty) playTrack(0);
     }}
 
     function playTrack(index) {{
@@ -555,7 +559,9 @@ def generate_html(images, output_path):
     // Drag-and-drop
     let dragCounter = 0;
     document.addEventListener("dragenter", (e) => {{
-      if (Array.from(e.dataTransfer.items).some(i => i.type.startsWith("audio/"))) {{
+      if (Array.from(e.dataTransfer.items).some(i =>
+        i.type.startsWith("audio/") || i.type === "" || i.kind === "file"
+      )) {{
         dragCounter++;
         dropOverlay.classList.add("active");
       }}

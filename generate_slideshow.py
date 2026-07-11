@@ -194,6 +194,88 @@ def generate_html(images, output_path):
       pointer-events: none;
     }}
     #drop-overlay.active {{ display: flex; }}
+
+    /* ── Slide scrubber bar ── */
+    #scrubber-wrap {{
+      position: fixed;
+      bottom: 52px; left: 0; right: 0;
+      z-index: 25;
+      padding: 0 20px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }}
+    body:hover #scrubber-wrap {{ opacity: 1; }}
+    #scrubber {{
+      width: 100%;
+      accent-color: #fff;
+      cursor: pointer;
+      height: 4px;
+    }}
+
+    /* ── Jump / Go-to input ── */
+    #goto-wrap {{
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }}
+    #goto-input {{
+      width: 56px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      border-radius: 6px;
+      padding: 3px 6px;
+      font-size: 0.8rem;
+      text-align: center;
+    }}
+    #goto-input:focus {{ outline: none; border-color: #fff; }}
+    #btn-goto {{
+      background: rgba(255,255,255,0.2);
+      border: none; color: #fff;
+      padding: 4px 9px; border-radius: 6px;
+      cursor: pointer; font-size: 0.8rem;
+    }}
+    #btn-goto:hover {{ background: rgba(255,255,255,0.4); }}
+
+    /* ── Thumbnail filmstrip panel ── */
+    #filmstrip {{
+      display: none;
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      height: 110px;
+      z-index: 30;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(6px);
+      overflow-x: auto;
+      overflow-y: hidden;
+      white-space: nowrap;
+      padding: 8px 12px;
+      gap: 8px;
+      scroll-behavior: smooth;
+    }}
+    #filmstrip.open {{ display: flex; align-items: center; }}
+    .thumb {{
+      flex-shrink: 0;
+      width: 80px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 4px;
+      cursor: pointer;
+      border: 2px solid transparent;
+      opacity: 0.65;
+      transition: opacity 0.2s, border-color 0.2s;
+    }}
+    .thumb:hover {{ opacity: 1; }}
+    .thumb.active {{ border-color: #fff; opacity: 1; }}
+    #btn-filmstrip {{
+      background: rgba(255,255,255,0.2);
+      border: none; color: #fff;
+      padding: 6px 10px; border-radius: 20px;
+      cursor: pointer; font-size: 0.85rem;
+      white-space: nowrap;
+    }}
+    #btn-filmstrip:hover {{ background: rgba(255,255,255,0.4); }}
   </style>
 </head>
 <body>
@@ -229,6 +311,11 @@ def generate_html(images, output_path):
     <img id="slide-img" src="" alt="slide" />
   </div>
 
+  <!-- Slide progress scrubber -->
+  <div id="scrubber-wrap">
+    <input type="range" id="scrubber" min="0" max="100" value="0" title="Jump to slide" />
+  </div>
+
   <!-- Nav arrows -->
   <button class="arrow" id="btn-prev" onclick="move(-1)">&#8592;</button>
   <button class="arrow" id="btn-next" onclick="move(1)">&#8594;</button>
@@ -237,12 +324,20 @@ def generate_html(images, output_path):
   <div id="info-bar">
     <span id="counter"></span>
     <span id="caption"></span>
+    <div id="goto-wrap">
+      <input type="number" id="goto-input" min="1" placeholder="#" title="Go to slide number" />
+      <button id="btn-goto" onclick="gotoSlide()">Go</button>
+    </div>
+    <button id="btn-filmstrip" onclick="toggleFilmstrip()" title="Thumbnail browser (T)">🎞 Thumbnails</button>
     <button id="btn-play" onclick="togglePlay()">&#9654; Play</button>
     <span id="speed-label">Speed:</span>
     <input type="range" id="speed" min="1" max="10" value="4" title="Slide interval (seconds)" />
     <span id="speed-val">4s</span>
     <button id="btn-fs" onclick="toggleFullscreen()" title="Fullscreen (F)" style="background:rgba(255,255,255,0.2);border:none;color:#fff;padding:6px 10px;border-radius:20px;cursor:pointer;font-size:0.85rem;">⛶ Fullscreen</button>
   </div>
+
+  <!-- Thumbnail filmstrip -->
+  <div id="filmstrip"></div>
 
   <script>
     const images = [
@@ -258,6 +353,11 @@ def generate_html(images, output_path):
     const speedInput = document.getElementById("speed");
     const speedVal = document.getElementById("speed-val");
     const playBtn = document.getElementById("btn-play");
+    const scrubber = document.getElementById("scrubber");
+    const filmstrip = document.getElementById("filmstrip");
+    const gotoInput = document.getElementById("goto-input");
+
+    scrubber.max = images.length - 1;
 
     function showSlide(index) {{
       img.classList.add("fade");
@@ -268,7 +368,58 @@ def generate_html(images, output_path):
         counter.textContent = `${{current + 1}} / ${{images.length}}`;
         caption.textContent = images[current].name;
         img.classList.remove("fade");
+        scrubber.value = current;
+        updateActiveThumb();
       }}, 300);
+    }}
+
+    scrubber.addEventListener("input", () => showSlide(parseInt(scrubber.value)));
+
+    function gotoSlide() {{
+      const n = parseInt(gotoInput.value);
+      if (!isNaN(n) && n >= 1 && n <= images.length) {{
+        showSlide(n - 1);
+        gotoInput.value = "";
+      }}
+    }}
+    gotoInput.addEventListener("keydown", (e) => {{ if (e.key === "Enter") gotoSlide(); }});
+
+    // ── Filmstrip ──
+    let filmstripBuilt = false;
+
+    function toggleFilmstrip() {{
+      filmstrip.classList.toggle("open");
+      document.getElementById("btn-filmstrip").textContent =
+        filmstrip.classList.contains("open") ? "✕ Close" : "🎞 Thumbnails";
+      if (!filmstripBuilt) buildFilmstrip();
+      scrollToActiveThumb();
+    }}
+
+    function buildFilmstrip() {{
+      filmstripBuilt = true;
+      images.forEach((im, i) => {{
+        const t = document.createElement("img");
+        t.className = "thumb" + (i === current ? " active" : "");
+        t.src = im.src;
+        t.title = `[${{i+1}}] ${{im.name}}`;
+        t.loading = "lazy";
+        t.onclick = () => {{ showSlide(i); }};
+        filmstrip.appendChild(t);
+      }});
+    }}
+
+    function updateActiveThumb() {{
+      if (!filmstripBuilt) return;
+      filmstrip.querySelectorAll(".thumb").forEach((t, i) => {{
+        t.classList.toggle("active", i === current);
+      }});
+      scrollToActiveThumb();
+    }}
+
+    function scrollToActiveThumb() {{
+      if (!filmstripBuilt) return;
+      const active = filmstrip.querySelector(".thumb.active");
+      if (active) active.scrollIntoView({{ behavior: "smooth", block: "nearest", inline: "center" }});
     }}
 
     function move(dir) {{
@@ -294,11 +445,13 @@ def generate_html(images, output_path):
     }});
 
     document.addEventListener("keydown", (e) => {{
+      if (e.target === gotoInput) return;
       if (e.key === "ArrowRight" || e.key === "ArrowDown") move(1);
       if (e.key === "ArrowLeft" || e.key === "ArrowUp") move(-1);
       if (e.key === " ") {{ e.preventDefault(); togglePlay(); }}
       if (e.key === "m" || e.key === "M") toggleMute();
       if (e.key === "f" || e.key === "F") toggleFullscreen();
+      if (e.key === "t" || e.key === "T") toggleFilmstrip();
     }});
 
     function toggleFullscreen() {{

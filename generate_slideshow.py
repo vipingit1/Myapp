@@ -531,6 +531,7 @@ def generate_html(images, output_path, tracks=None):
       if (e.key === "m" || e.key === "M") toggleMute();
       if (e.key === "f" || e.key === "F") toggleFullscreen();
       if (e.key === "t" || e.key === "T") toggleFilmstrip();
+      if (e.key === "Escape" && filmstrip.classList.contains("open")) toggleFilmstrip();
     }});
 
     function toggleFullscreen() {{

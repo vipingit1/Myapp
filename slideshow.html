@@ -6739,8 +6739,59 @@
     const dropOverlay = document.getElementById("drop-overlay");
 
     audio.volume = 0.7;
-    let playlist = [];
+    let playlist = [{"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Celia Cruz - Guantanamera (Audio).webm", "name": "Celia Cruz - Guantanamera (Audio)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Celia Cruz - La Vida Es Un Carnaval (Audio).webm", "name": "Celia Cruz - La Vida Es Un Carnaval (Audio)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Ché Ché Colé.webm", "name": "Ché Ché Colé"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/EL DIA DE MI SUERTE - WILLIE COLON & HECTOR LAVOE.webm", "name": "EL DIA DE MI SUERTE - WILLIE COLON & HECTOR LAVOE"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/El Barbero Loco.webm", "name": "El Barbero Loco"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/El Malo (Remastered 2024).webm", "name": "El Malo (Remastered 2024)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Fania All Stars ft Oscar D'Leon, Milly Quezada, El Canario and others - Quitate Tu (Yo Soy La Salsa).webm", "name": "Fania All Stars ft Oscar D'Leon, Milly Quezada, El Canario and others - Quitate Tu (Yo Soy La Salsa)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Héctor Lavoe - Periódico de Ayer (Visualizador Oficial).webm", "name": "Héctor Lavoe - Periódico de Ayer (Visualizador Oficial)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Héctor Lavoe – Mi Gente (Visualizador Oficial).webm", "name": "Héctor Lavoe – Mi Gente (Visualizador Oficial)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Idilio.webm", "name": "Idilio"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Ismael Rivera - Las Caras Lindas (Official Visualizer).webm", "name": "Ismael Rivera - Las Caras Lindas (Official Visualizer)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/La Murga.webm", "name": "La Murga"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Richie Ray y Bobby Cruz - Sonido Bestial (Letra Oficial).webm", "name": "Richie Ray y Bobby Cruz - Sonido Bestial (Letra Oficial)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Willie Colon & Ruben Blades - Buscando Guayaba (Letras⧸Lyrics).webm", "name": "Willie Colon & Ruben Blades - Buscando Guayaba (Letras⧸Lyrics)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Willie Colon & Ruben Blades - Pedro Navaja.webm", "name": "Willie Colon & Ruben Blades - Pedro Navaja"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Willie Colon & Ruben Blades - Siembra.webm", "name": "Willie Colon & Ruben Blades - Siembra"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Willie Colon Ft. Hector Lavoe – Calle Luna Calle Sol (Letras⧸Lyrics).webm", "name": "Willie Colon Ft. Hector Lavoe – Calle Luna Calle Sol (Letras⧸Lyrics)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Willie Colón & Héctor Lavoe - Aguanile (Letra Oficial).webm", "name": "Willie Colón & Héctor Lavoe - Aguanile (Letra Oficial)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Willie Colón & Rubén Blades - Plástico (Audio Oficial).webm", "name": "Willie Colón & Rubén Blades - Plástico (Audio Oficial)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/salsa/Willie Colón Presents Rubén Blades - Pablo Pueblo (Audio Oficial).webm", "name": "Willie Colón Presents Rubén Blades - Pablo Pueblo (Audio Oficial)"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/01 - Javolenus - Morning Crow.mp3", "name": "01 - Javolenus - Morning Crow"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/02 - speck - Garden Trespass.mp3", "name": "02 - speck - Garden Trespass"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/03 - gabriel_shelligton - Madrugada Instrumental.mp3", "name": "03 - gabriel_shelligton - Madrugada Instrumental"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/04 - bblohowiak - DIRGE2026 Act III Remix.mp3", "name": "04 - bblohowiak - DIRGE2026 Act III Remix"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/05 - speck - Jazzy Parts.mp3", "name": "05 - speck - Jazzy Parts"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/06 - rewob - Rise Transformed.mp3", "name": "06 - rewob - Rise Transformed"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/07 - Dreamonizer - Slow Down Aubergine.mp3", "name": "07 - Dreamonizer - Slow Down Aubergine"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/08 - AntSurvila - WILD WINDSTEPS.mp3", "name": "08 - AntSurvila - WILD WINDSTEPS"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/09 - jaspertine - Signature Set.mp3", "name": "09 - jaspertine - Signature Set"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/10 - Javolenus - Ode to a Street Lamp.mp3", "name": "10 - Javolenus - Ode to a Street Lamp"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/11 - jaspertine - No Time Like the Wasted.mp3", "name": "11 - jaspertine - No Time Like the Wasted"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/12 - Robbero - System Shock.mp3", "name": "12 - Robbero - System Shock"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/13 - speck - Chopped Water.mp3", "name": "13 - speck - Chopped Water"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/14 - JohnSmith1992 - Samba with Rock Organ.mp3", "name": "14 - JohnSmith1992 - Samba with Rock Organ"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/15 - gabriel_shelligton - This Is Our Music Instrumental.mp3", "name": "15 - gabriel_shelligton - This Is Our Music Instrumental"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/16 - NiGiD - Moonlight Gardener.mp3", "name": "16 - NiGiD - Moonlight Gardener"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/17 - NiGiD - Road to Solitude.mp3", "name": "17 - NiGiD - Road to Solitude"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/18 - speck - All In All.mp3", "name": "18 - speck - All In All"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/19 - speck - Room To Spare.mp3", "name": "19 - speck - Room To Spare"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/20 - NiGiD - Roman Song.mp3", "name": "20 - NiGiD - Roman Song"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/21 - NiGiD - Spare Room Bebop.mp3", "name": "21 - NiGiD - Spare Room Bebop"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/22 - NiGiD - Ai Ai Faras.mp3", "name": "22 - NiGiD - Ai Ai Faras"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/23 - speck - Saturated Worth.mp3", "name": "23 - speck - Saturated Worth"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/24 - Zenboy1955 - Oasis of Pulse.mp3", "name": "24 - Zenboy1955 - Oasis of Pulse"},
+    {"url": "file:///C:/Users/dell/Projects/Myapp/music/25 - NiGiD - Hot Wheel Blues.mp3", "name": "25 - NiGiD - Hot Wheel Blues"}];
     let trackIndex = 0;
+
+    // Auto-start preloaded tracks
+    if (playlist.length) {
+      trackName.textContent = playlist[0].name;
+      audio.src = playlist[0].url;
+      updatePlaylistCount();
+    }
 
     function addTracks(files) {
       const audioFiles = Array.from(files).filter(f =>

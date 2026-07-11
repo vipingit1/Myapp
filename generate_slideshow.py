@@ -9,8 +9,15 @@ import sys
 from pathlib import Path
 
 IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff', '.tif'}
+AUDIO_EXTENSIONS = {'.mp3', '.wav', '.ogg', '.flac', '.aac', '.m4a', '.opus', '.webm', '.weba'}
 SCAN_ROOT = "C:\\MyPhotos"
 OUTPUT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "slideshow.html")
+
+# Add folders here to pre-load music automatically when the slideshow opens
+MUSIC_DIRS = [
+    r"C:\Users\dell\Projects\Myapp\music\salsa",
+    r"C:\Users\dell\Projects\Myapp\music",
+]
 
 SKIP_DIRS = {
     "Windows", "Program Files", "Program Files (x86)",
@@ -39,14 +46,41 @@ def scan_images(root):
     return images
 
 
-def generate_html(images, output_path):
+def scan_music(dirs):
+    """Scan MUSIC_DIRS for audio files and return list of (file_url, name) tuples."""
+    tracks = []
+    seen = set()
+    for d in dirs:
+        if not os.path.isdir(d):
+            continue
+        for filename in sorted(os.listdir(d)):
+            if Path(filename).suffix.lower() in AUDIO_EXTENSIONS:
+                full_path = os.path.join(d, filename)
+                if full_path in seen:
+                    continue
+                seen.add(full_path)
+                file_url = "file:///" + full_path.replace("\\", "/")
+                name = Path(filename).stem
+                tracks.append((file_url, name))
+    print(f"Found {len(tracks)} music tracks.")
+    return tracks
+
+
+def generate_html(images, output_path, tracks=None):
     if not images:
         print("No images found. Exiting.")
         sys.exit(1)
 
+    tracks = tracks or []
+
     image_js_array = ",\n    ".join(
         f'{{"src": "{src}", "name": "{name.replace(chr(34), chr(39))}"}}'
         for src, name in images
+    )
+
+    music_js_array = ",\n    ".join(
+        f'{{"url": "{url}", "name": "{name.replace(chr(34), chr(39))}"}}'
+        for url, name in tracks
     )
 
     html = f"""<!DOCTYPE html>
@@ -495,8 +529,15 @@ def generate_html(images, output_path):
     const dropOverlay = document.getElementById("drop-overlay");
 
     audio.volume = 0.7;
-    let playlist = [];
+    let playlist = [{music_js_array}];
     let trackIndex = 0;
+
+    // Auto-start preloaded tracks
+    if (playlist.length) {{
+      trackName.textContent = playlist[0].name;
+      audio.src = playlist[0].url;
+      updatePlaylistCount();
+    }}
 
     function addTracks(files) {{
       const audioFiles = Array.from(files).filter(f =>
@@ -588,5 +629,6 @@ def generate_html(images, output_path):
 
 if __name__ == "__main__":
     images = scan_images(SCAN_ROOT)
-    generate_html(images, OUTPUT_FILE)
+    tracks = scan_music(MUSIC_DIRS)
+    generate_html(images, OUTPUT_FILE, tracks)
     print("Open slideshow.html in your browser to view it.")

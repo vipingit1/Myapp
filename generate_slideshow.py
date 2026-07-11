@@ -70,8 +70,22 @@ def generate_html(images, output_path):
       position: fixed;
       inset: 0;
       z-index: 0;
+      overflow: hidden;
     }}
+    /* Blurred background fills black bars */
+    #slide-bg {{
+      position: absolute;
+      inset: -20px;
+      background-size: cover;
+      background-position: center;
+      filter: blur(18px) brightness(0.45) saturate(1.2);
+      transform: scale(1.1);
+      transition: background-image 0.6s ease;
+    }}
+    /* Actual image — full, uncroped, centered */
     #slide-img {{
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: contain;
@@ -308,6 +322,7 @@ def generate_html(images, output_path):
 
   <!-- Full-frame slide -->
   <div id="slide-container">
+    <div id="slide-bg"></div>
     <img id="slide-img" src="" alt="slide" />
   </div>
 
@@ -348,6 +363,7 @@ def generate_html(images, output_path):
     let playing = false;
     let timer = null;
     const img = document.getElementById("slide-img");
+    const slideBg = document.getElementById("slide-bg");
     const counter = document.getElementById("counter");
     const caption = document.getElementById("caption");
     const speedInput = document.getElementById("speed");
@@ -363,8 +379,10 @@ def generate_html(images, output_path):
       img.classList.add("fade");
       setTimeout(() => {{
         current = ((index % images.length) + images.length) % images.length;
-        img.src = images[current].src;
+        const src = images[current].src;
+        img.src = src;
         img.alt = images[current].name;
+        slideBg.style.backgroundImage = `url('${{src}}')`;
         counter.textContent = `${{current + 1}} / ${{images.length}}`;
         caption.textContent = images[current].name;
         img.classList.remove("fade");

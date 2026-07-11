@@ -129,17 +129,18 @@ def generate_html(images, output_path):
     #music-bar {{
       position: fixed;
       top: 0; left: 0; right: 0;
-      background: rgba(0,0,0,0.6);
-      backdrop-filter: blur(6px);
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(8px);
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 7px 16px;
+      gap: 10px;
+      padding: 7px 14px;
       font-size: 0.8rem;
       color: #ccc;
       z-index: 100;
+      flex-wrap: wrap;
     }}
-    #music-bar label {{
+    .music-btn {{
       background: rgba(255,255,255,0.12);
       border: 1px solid rgba(255,255,255,0.2);
       color: #eee;
@@ -147,34 +148,74 @@ def generate_html(images, output_path):
       border-radius: 20px;
       cursor: pointer;
       white-space: nowrap;
+      font-size: 0.8rem;
       transition: background 0.2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
     }}
-    #music-bar label:hover {{ background: rgba(255,255,255,0.25); }}
+    .music-btn:hover {{ background: rgba(255,255,255,0.25); }}
+    #yt-btn {{ border-color: #ff4444; color: #ff9999; }}
+    #yt-btn:hover {{ background: rgba(255,60,60,0.25); }}
     #music-file {{ display: none; }}
-    #track-name {{ max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #aef; }}
+    #track-name {{ max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #aef; }}
     #btn-mute {{
       background: none; border: none; color: #eee;
-      font-size: 1.2rem; cursor: pointer; padding: 2px 6px;
+      font-size: 1.2rem; cursor: pointer; padding: 2px 4px;
     }}
-    #vol-slider {{ width: 80px; accent-color: #aef; }}
-    #music-progress {{ width: 140px; accent-color: #aef; cursor: pointer; }}
+    #vol-slider {{ width: 70px; accent-color: #aef; }}
+    #music-progress {{ width: 120px; accent-color: #aef; cursor: pointer; }}
     #music-time {{ color: #888; font-size: 0.75rem; white-space: nowrap; }}
+    #btn-prev-track, #btn-next-track {{
+      background: none; border: none; color: #ccc;
+      font-size: 1rem; cursor: pointer; padding: 2px 4px;
+    }}
+    #btn-prev-track:hover, #btn-next-track:hover {{ color: #fff; }}
+    #playlist-count {{ color: #888; font-size: 0.75rem; white-space: nowrap; }}
+    #drop-overlay {{
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(100,180,255,0.18);
+      border: 4px dashed #aef;
+      z-index: 999;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: #aef;
+      pointer-events: none;
+    }}
+    #drop-overlay.active {{ display: flex; }}
   </style>
 </head>
 <body>
+  <!-- Drag-and-drop overlay -->
+  <div id="drop-overlay">🎵 Drop audio files here</div>
+
   <!-- Music bar -->
   <div id="music-bar">
-    <label for="music-file">🎵 Add Music</label>
-    <input type="file" id="music-file" accept="audio/*" onchange="loadMusic(this)" />
-    <span id="track-name">No track loaded</span>
-    <button id="btn-mute" onclick="toggleMute()" title="Mute/Unmute">🔊</button>
+    <a id="yt-btn" class="music-btn"
+       href="https://studio.youtube.com/channel/UCmusiclib/music"
+       target="_blank" rel="noopener" title="Download free tracks, then drag them in">
+      ▶ YouTube Audio Library
+    </a>
+    <label for="music-file" class="music-btn" title="Pick audio files from your computer">
+      🎵 Add Tracks
+    </label>
+    <input type="file" id="music-file" accept="audio/*" multiple onchange="addTracks(this.files)" />
+    <button id="btn-prev-track" onclick="prevTrack()" title="Previous track">⏮</button>
+    <span id="track-name">Drop audio files or click Add Tracks</span>
+    <button id="btn-next-track" onclick="nextTrack()" title="Next track">⏭</button>
+    <span id="playlist-count"></span>
+    <button id="btn-mute" onclick="toggleMute()" title="Mute (M)">🔊</button>
     <input type="range" id="vol-slider" min="0" max="1" step="0.02" value="0.7"
            title="Volume" oninput="setVolume(this.value)" />
     <input type="range" id="music-progress" min="0" max="100" value="0"
            title="Seek" oninput="seekMusic(this.value)" />
     <span id="music-time">0:00 / 0:00</span>
   </div>
-  <audio id="bg-music" loop></audio>
+  <audio id="bg-music"></audio>
 
   <div id="slide-container">
     <button class="arrow" id="btn-prev" onclick="move(-1)">&#8592;</button>
@@ -255,15 +296,37 @@ def generate_html(images, output_path):
     const volSlider = document.getElementById("vol-slider");
     const progressSlider = document.getElementById("music-progress");
     const musicTime = document.getElementById("music-time");
+    const playlistCount = document.getElementById("playlist-count");
+    const dropOverlay = document.getElementById("drop-overlay");
 
     audio.volume = 0.7;
+    let playlist = [];
+    let trackIndex = 0;
 
-    function loadMusic(input) {{
-      const file = input.files[0];
-      if (!file) return;
-      audio.src = URL.createObjectURL(file);
-      trackName.textContent = file.name.replace(/\\.[^.]+$/, "");
+    function addTracks(files) {{
+      const audioFiles = Array.from(files).filter(f => f.type.startsWith("audio/"));
+      audioFiles.forEach(f => playlist.push({{ url: URL.createObjectURL(f), name: f.name.replace(/\\.[^.]+$/, "") }}));
+      updatePlaylistCount();
+      if (playlist.length === audioFiles.length) playTrack(0);
+    }}
+
+    function playTrack(index) {{
+      if (!playlist.length) return;
+      trackIndex = ((index % playlist.length) + playlist.length) % playlist.length;
+      audio.src = playlist[trackIndex].url;
+      trackName.textContent = playlist[trackIndex].name;
       audio.play();
+      updatePlaylistCount();
+    }}
+
+    function prevTrack() {{ playTrack(trackIndex - 1); }}
+    function nextTrack() {{ playTrack(trackIndex + 1); }}
+
+    audio.addEventListener("ended", () => nextTrack());
+
+    function updatePlaylistCount() {{
+      playlistCount.textContent = playlist.length > 1
+        ? `${{trackIndex + 1}}/${{playlist.length}} tracks` : "";
     }}
 
     function toggleMute() {{
@@ -292,6 +355,26 @@ def generate_html(images, output_path):
       const pct = (audio.currentTime / audio.duration) * 100;
       progressSlider.value = pct;
       musicTime.textContent = `${{fmtTime(audio.currentTime)}} / ${{fmtTime(audio.duration)}}`;
+    }});
+
+    // Drag-and-drop
+    let dragCounter = 0;
+    document.addEventListener("dragenter", (e) => {{
+      if (Array.from(e.dataTransfer.items).some(i => i.type.startsWith("audio/"))) {{
+        dragCounter++;
+        dropOverlay.classList.add("active");
+      }}
+    }});
+    document.addEventListener("dragleave", () => {{
+      dragCounter--;
+      if (dragCounter <= 0) {{ dragCounter = 0; dropOverlay.classList.remove("active"); }}
+    }});
+    document.addEventListener("dragover", (e) => e.preventDefault());
+    document.addEventListener("drop", (e) => {{
+      e.preventDefault();
+      dragCounter = 0;
+      dropOverlay.classList.remove("active");
+      addTracks(e.dataTransfer.files);
     }});
   </script>
 </body>

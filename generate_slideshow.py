@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.tiff', '.tif'}
-SCAN_ROOT = "C:\\"
+SCAN_ROOT = "C:\\MyPhotos"
 OUTPUT_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "slideshow.html")
 
 SKIP_DIRS = {

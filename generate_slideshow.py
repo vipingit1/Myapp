@@ -67,6 +67,7 @@ def generate_html(images, output_path):
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      padding-top: 42px;
     }}
     #slide-container {{
       position: relative;
@@ -125,9 +126,56 @@ def generate_html(images, output_path):
     #btn-play:hover {{ background: rgba(255,255,255,0.3); }}
     #speed-label {{ color: #888; font-size: 0.8rem; }}
     input[type=range] {{ accent-color: #fff; cursor: pointer; }}
+    #music-bar {{
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 7px 16px;
+      font-size: 0.8rem;
+      color: #ccc;
+      z-index: 100;
+    }}
+    #music-bar label {{
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #eee;
+      padding: 4px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }}
+    #music-bar label:hover {{ background: rgba(255,255,255,0.25); }}
+    #music-file {{ display: none; }}
+    #track-name {{ max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #aef; }}
+    #btn-mute {{
+      background: none; border: none; color: #eee;
+      font-size: 1.2rem; cursor: pointer; padding: 2px 6px;
+    }}
+    #vol-slider {{ width: 80px; accent-color: #aef; }}
+    #music-progress {{ width: 140px; accent-color: #aef; cursor: pointer; }}
+    #music-time {{ color: #888; font-size: 0.75rem; white-space: nowrap; }}
   </style>
 </head>
 <body>
+  <!-- Music bar -->
+  <div id="music-bar">
+    <label for="music-file">🎵 Add Music</label>
+    <input type="file" id="music-file" accept="audio/*" onchange="loadMusic(this)" />
+    <span id="track-name">No track loaded</span>
+    <button id="btn-mute" onclick="toggleMute()" title="Mute/Unmute">🔊</button>
+    <input type="range" id="vol-slider" min="0" max="1" step="0.02" value="0.7"
+           title="Volume" oninput="setVolume(this.value)" />
+    <input type="range" id="music-progress" min="0" max="100" value="0"
+           title="Seek" oninput="seekMusic(this.value)" />
+    <span id="music-time">0:00 / 0:00</span>
+  </div>
+  <audio id="bg-music" loop></audio>
+
   <div id="slide-container">
     <button class="arrow" id="btn-prev" onclick="move(-1)">&#8592;</button>
     <img id="slide-img" src="" alt="slide" />
@@ -195,9 +243,56 @@ def generate_html(images, output_path):
       if (e.key === "ArrowRight" || e.key === "ArrowDown") move(1);
       if (e.key === "ArrowLeft" || e.key === "ArrowUp") move(-1);
       if (e.key === " ") {{ e.preventDefault(); togglePlay(); }}
+      if (e.key === "m" || e.key === "M") toggleMute();
     }});
 
     showSlide(0);
+
+    // ── Music ──────────────────────────────────────────────
+    const audio = document.getElementById("bg-music");
+    const trackName = document.getElementById("track-name");
+    const muteBtn = document.getElementById("btn-mute");
+    const volSlider = document.getElementById("vol-slider");
+    const progressSlider = document.getElementById("music-progress");
+    const musicTime = document.getElementById("music-time");
+
+    audio.volume = 0.7;
+
+    function loadMusic(input) {{
+      const file = input.files[0];
+      if (!file) return;
+      audio.src = URL.createObjectURL(file);
+      trackName.textContent = file.name.replace(/\\.[^.]+$/, "");
+      audio.play();
+    }}
+
+    function toggleMute() {{
+      audio.muted = !audio.muted;
+      muteBtn.textContent = audio.muted ? "🔇" : "🔊";
+    }}
+
+    function setVolume(val) {{
+      audio.volume = parseFloat(val);
+      audio.muted = false;
+      muteBtn.textContent = "🔊";
+    }}
+
+    function seekMusic(val) {{
+      if (audio.duration) audio.currentTime = (val / 100) * audio.duration;
+    }}
+
+    function fmtTime(s) {{
+      const m = Math.floor(s / 60);
+      const sec = Math.floor(s % 60).toString().padStart(2, "0");
+      return `${{m}}:${{sec}}`;
+    }}
+
+    audio.addEventListener("timeupdate", () => {{
+      if (!audio.duration) return;
+      const pct = (audio.currentTime / audio.duration) * 100;
+      progressSlider.value = pct;
+      musicTime.textContent = `${{fmtTime(audio.currentTime)}} / ${{fmtTime(audio.duration)}}`;
+    }});
   </script>
 </body>
 </html>
